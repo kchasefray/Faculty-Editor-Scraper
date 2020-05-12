@@ -1,44 +1,42 @@
 """"
 Katharine Frazier
 NC State University Libraries
-11/15/19
+05/12/20
 PURPOSE: Scrapes ScienceDirect editorial board pages for faculty associated with NC State University. 
 NOTES: Selenium CSS selectors are chosen based on ScienceDirect's CSS. Must be edited for other publisher websites.
        Text cleaning in lines 69-76 based on the way ScienceDirect displays editorial information.
        Users must install ChromeDriver (https://chromedriver.chromium.org/) to run Chrome through Selenium.
 """
-#import pandas and selenium
+#import modules
 from selenium import webdriver
 import pandas as pd 
 
 
 #read in list of titles to scrape
-elsevier_titles = pd.read_csv(r'filepath-to-list.csv', encoding = "ISO-8859-1")
+elsevier_titles = pd.read_csv(r'FILEPATH-TO-TITLE-LIST.csv', encoding = "ISO-8859-1")
 
 #create list of titles
 elsevier_titles_list = elsevier_titles['Journal'].values
 titles = []
 for x in elsevier_titles_list:
     titles.append(x)
+    
 #remove 'title' value from list
 titles.remove('Total')
 
 #establish webdriver
 browser = webdriver.Chrome()
 
-#create lists that will hold editor information
-
-#editors affiliated with NC State
-ncaffiliate = []
-
-#all editors listed on a given editorial board page
+#create list of all editors listed on a given editorial board page
 editors = [] 
 
-#create loop to search through list of titles
-#accesses each editorial board page and searches for title 
-#of journal, editors & affiliations
+#create list of editors affiliated with NC State
+ncaffiliate = []
+
+#this next section creates a loop to search through list of titles
+#this will access each editorial board page and search for title of journal, editors & affiliations
+#IMPORTANT: use try/except to accomodate titles no longer on ScienceDirect
 for x in titles:
-    #use try/except to accomodate titles no longer on ScienceDirect
     try:
         #direct webdriver to individual ScienceDirect page
         browser.get('http://www.journals.elsevier.com/' + x + '/editorial-board')
@@ -53,8 +51,7 @@ for x in titles:
     except:
         pass
     try:
-        #get text value from editor web elements.
-        #add paired journal title and editor value to list of editors
+        #get text value from each editor web element, and append name and journal title to list of all editors
         for item in alleditors:
             editors.append(str(title + ' - ' + item.text))
     except:
@@ -72,7 +69,7 @@ for item in editors:
         item = item.split(sep, 1)[0]
         #makes code more legible by replacing '\n' with whitespace
         item = item.replace('\n', ' ')
-        #appends NC State editor to list
+        #appends cleaned NC State editor value to list
         ncaffiliate.append(item)
         
 #creates dataframe of NC State faculty editors
